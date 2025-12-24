@@ -1,12 +1,15 @@
 from flask import Flask, render_template, request, send_file, jsonify
+from flask_cors import CORS
 from werkzeug.utils import secure_filename
 import openpyxl
 from openpyxl import load_workbook
 import os
 from io import BytesIO
 import tempfile
+import traceback
 
 app = Flask(__name__)
+CORS(app)  # Enable CORS for all routes
 app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50MB max file size
 
 # Store template in memory (in production, use Redis or database)
