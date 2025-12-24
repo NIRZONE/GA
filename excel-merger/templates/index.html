@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel Data Merger</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 3rem;
+        }
+        
+        h1 {
+            color: #2d3748;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .subtitle {
+            color: #718096;
+            margin-bottom: 2rem;
+        }
+        
+        .section {
+            background: #f7fafc;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 2px solid #e2e8f0;
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            color: #2d3748;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .upload-box {
+            border: 3px dashed #cbd5e0;
+            border-radius: 12px;
+            padding: 3rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: white;
+        }
+        
+        .upload-box:hover {
+            border-color: #667eea;
+            background: #f7fafc;
+        }
+        
+        .upload-box.active {
+            border-color: #48bb78;
+            background: #f0fff4;
+        }
+        
+        .file-input {
+            display: none;
+        }
+        
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-danger {
+            background: #f56565;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #e53e3e;
+        }
+        
+        .btn-success {
+            background: #48bb78;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #38a169;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(72, 187, 120, 0.4);
+        }
+        
+        .btn:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .file-info {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 2px solid #48bb78;
+        }
+        
+        .status {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+        
+        .status-success {
+            background: #c6f6d5;
+            color: #22543d;
+            border: 1px solid #48bb78;
+        }
+        
+        .status-error {
+            background: #fed7d7;
+            color: #742a2a;
+            border: 1px solid #f56565;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        
+        .small-upload {
+            border: 2px dashed #cbd5e0;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: white;
+        }
+        
+        .small-upload:hover {
+            border-color: #48bb78;
+            background: #f0fff4;
+        }
+        
+        .icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 Excel Data Merger</h1>
+        <p class="subtitle">Merge data files into your template with perfect formatting preservation</p>
+        
+        <!-- Template Upload Section -->
+        <div class="section">
+            <h2 class="section-title">📄 Template File</h2>
+            
+            <div id="template-upload" class="upload-box">
+                <div class="icon">📁</div>
+                <p style="font-weight: 600; color: #2d3748; margin-bottom: 0.5rem;">Upload Template Excel File</p>
+                <p style="color: #718096; font-size: 0.9rem;">Must contain "GA RAW" sheet</p>
+                <input type="file" id="template-input" class="file-input" accept=".xlsx,.xls">
+            </div>
+            
+            <div id="template-info" class="file-info hidden">
+                <div>
+                    <p style="font-weight: 600; color: #2d3748;" id="template-name"></p>
+                    <p style="color: #48bb78; font-size: 0.9rem;">✓ Template loaded</p>
+                </div>
+                <button class="btn btn-danger" onclick="deleteTemplate()" style="width: auto; padding: 0.5rem 1rem;">🗑️ Delete</button>
+            </div>
+        </div>
+        
+        <!-- Data Files Section -->
+        <div id="data-section" class="section hidden">
+            <h2 class="section-title">📂 Data Files</h2>
+            
+            <div class="grid">
+                <div>
+                    <p style="font-weight: 600; margin-bottom: 0.5rem;">File 1</p>
+                    <div class="small-upload" onclick="document.getElementById('file1-input').click()">
+                        <div class="icon">📄</div>
+                        <p style="font-size: 0.9rem; color: #718096;" id="file1-label">Upload File 1</p>
+                        <input type="file" id="file1-input" class="file-input" accept=".xlsx,.xls">
+                    </div>
+                </div>
+                
+                <div>
+                    <p style="font-weight: 600; margin-bottom: 0.5rem;">File 2</p>
+                    <div class="small-upload" onclick="document.getElementById('file2-input').click()">
+                        <div class="icon">📄</div>
+                        <p style="font-size: 0.9rem; color: #718096;" id="file2-label">Upload File 2</p>
+                        <input type="file" id="file2-input" class="file-input" accept=".xlsx,.xls">
+                    </div>
+                </div>
+            </div>
+            
+            <button id="merge-btn" class="btn btn-success" onclick="mergeFiles()" style="margin-top: 1.5rem;" disabled>
+                🔄 Merge Files into GA RAW Sheet
+            </button>
+        </div>
+        
+        <!-- Status Messages -->
+        <div id="status" class="hidden"></div>
+        
+        <!-- Download Section -->
+        <div id="download-section" class="section hidden">
+            <button class="btn btn-primary" onclick="downloadFile()">
+                ⬇️ Download Merged Excel File
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let templateUploaded = false;
+        let file1 = null;
+        let file2 = null;
+        let mergedBlob = null;
+
+        // Template upload
+        document.getElementById('template-upload').addEventListener('click', () => {
+            document.getElementById('template-input').click();
+        });
+
+        document.getElementById('template-input').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('template', file);
+
+            try {
+                const response = await fetch('/upload-template', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    templateUploaded = true;
+                    document.getElementById('template-upload').classList.add('hidden');
+                    document.getElementById('template-info').classList.remove('hidden');
+                    document.getElementById('template-name').textContent = data.filename;
+                    document.getElementById('data-section').classList.remove('hidden');
+                    showStatus(data.message, 'success');
+                } else {
+                    showStatus(data.error, 'error');
+                }
+            } catch (error) {
+                showStatus('Error uploading template: ' + error.message, 'error');
+            }
+        });
+
+        // File 1 upload
+        document.getElementById('file1-input').addEventListener('change', (e) => {
+            file1 = e.target.files[0];
+            if (file1) {
+                document.getElementById('file1-label').textContent = '✓ ' + file1.name;
+                checkMergeReady();
+            }
+        });
+
+        // File 2 upload
+        document.getElementById('file2-input').addEventListener('change', (e) => {
+            file2 = e.target.files[0];
+            if (file2) {
+                document.getElementById('file2-label').textContent = '✓ ' + file2.name;
+                checkMergeReady();
+            }
+        });
+
+        function checkMergeReady() {
+            const mergeBtn = document.getElementById('merge-btn');
+            mergeBtn.disabled = !(file1 && file2);
+        }
+
+        async function mergeFiles() {
+            if (!file1 || !file2) return;
+
+            const formData = new FormData();
+            formData.append('file1', file1);
+            formData.append('file2', file2);
+
+            try {
+                showStatus('Merging files...', 'success');
+                
+                const response = await fetch('/merge', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    mergedBlob = await response.blob();
+                    const mergeInfo = response.headers.get('X-Merge-Info');
+                    const [rows1, rows2] = mergeInfo ? mergeInfo.split(',') : ['?', '?'];
+                    
+                    showStatus(`Successfully merged ${rows1} rows from File 1 and ${rows2} rows from File 2!`, 'success');
+                    document.getElementById('download-section').classList.remove('hidden');
+                } else {
+                    const data = await response.json();
+                    showStatus(data.error, 'error');
+                }
+            } catch (error) {
+                showStatus('Error merging files: ' + error.message, 'error');
+            }
+        }
+
+        function downloadFile() {
+            if (!mergedBlob) return;
+            
+            const url = URL.createObjectURL(mergedBlob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `merged_${Date.now()}.xlsx`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        async function deleteTemplate() {
+            try {
+                await fetch('/delete-template', { method: 'POST' });
+                
+                templateUploaded = false;
+                file1 = null;
+                file2 = null;
+                mergedBlob = null;
+                
+                document.getElementById('template-upload').classList.remove('hidden');
+                document.getElementById('template-info').classList.add('hidden');
+                document.getElementById('data-section').classList.add('hidden');
+                document.getElementById('download-section').classList.add('hidden');
+                document.getElementById('file1-label').textContent = 'Upload File 1';
+                document.getElementById('file2-label').textContent = 'Upload File 2';
+                document.getElementById('template-input').value = '';
+                document.getElementById('file1-input').value = '';
+                document.getElementById('file2-input').value = '';
+                
+                showStatus('Template deleted. Please upload a new template.', 'success');
+            } catch (error) {
+                showStatus('Error deleting template: ' + error.message, 'error');
+            }
+        }
+
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.className = type === 'error' ? 'status status-error' : 'status status-success';
+            status.textContent = message;
+            status.classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
