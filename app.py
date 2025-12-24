@@ -21,14 +21,14 @@ def index():
 
 @app.route('/upload-template', methods=['POST'])
 def upload_template():
-    if 'template' not in request.files:
-        return jsonify({'error': 'No template file provided'}), 400
-    
-    file = request.files['template']
-    if file.filename == '':
-        return jsonify({'error': 'No file selected'}), 400
-    
     try:
+        if 'template' not in request.files:
+            return jsonify({'error': 'No template file provided'}), 400
+        
+        file = request.files['template']
+        if file.filename == '':
+            return jsonify({'error': 'No file selected'}), 400
+        
         # Read and store template in memory
         template_data = file.read()
         template_storage['data'] = template_data
@@ -44,6 +44,8 @@ def upload_template():
             'filename': template_storage['filename']
         })
     except Exception as e:
+        print(f"Error in upload_template: {str(e)}")
+        print(traceback.format_exc())
         return jsonify({'error': f'Error processing template: {str(e)}'}), 500
 
 @app.route('/delete-template', methods=['POST'])
